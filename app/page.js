@@ -96,7 +96,12 @@ export default function HomePage() {
     setFilteredArticles(filtered);
   };
 
-  const shareArticle = (article, platform) => {
+  const navigateToArticle = (articleId) => {
+    window.location.href = `/article/${articleId}`;
+  };
+
+  const shareArticle = (article, platform, e) => {
+    e?.stopPropagation(); // Prevent card click when sharing
     const url = `${window.location.origin}/article/${article.id}`;
     const text = `${article.title} - Shrigonda News`;
     

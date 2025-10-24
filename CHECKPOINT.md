@@ -3,8 +3,8 @@
 ## 🎯 Project Overview
 **Shrigonda News** is a modern, full-featured news website with role-based authentication, manual CMS, real-time notifications, and dynamic breaking news display.
 
-**Live URL:** `https://newsbit-next.preview.emergentagent.com`
-**Admin Portal:** `https://newsbit-next.preview.emergentagent.com/admin/login`
+**Live URL:** `https://event-debug.preview.emergentagent.com`
+**Admin Portal:** `https://event-debug.preview.emergentagent.com/admin/login`
 **Default Credentials:** `admin` / `admin123`
 
 ---
@@ -208,7 +208,7 @@ GET  /api/admin/articles             # Get all articles including unpublished
 ## 🚀 How to Use
 
 ### For Public Users:
-1. Visit: `https://newsbit-next.preview.emergentagent.com`
+1. Visit: `https://event-debug.preview.emergentagent.com`
 2. Browse breaking news carousel (auto-rotates every 5s)
 3. Filter by category using navigation buttons
 4. Search for specific articles using search bar
@@ -219,7 +219,7 @@ GET  /api/admin/articles             # Get all articles including unpublished
 9. Click "Back to Home" to return to homepage
 
 ### For Admin/Editors:
-1. Navigate to: `https://newsbit-next.preview.emergentagent.com/admin/login`
+1. Navigate to: `https://event-debug.preview.emergentagent.com/admin/login`
 2. Login with: `admin` / `admin123`
 3. View dashboard statistics
 4. Click "Create New Article" to add content:
@@ -347,7 +347,7 @@ Admin Login → Dashboard → Create Article → Fill Details → Submit
 Located in `/app/.env`:
 ```env
 MONGO_URL=mongodb://localhost:27017/shrigonda_news
-NEXT_PUBLIC_BASE_URL=https://newsbit-next.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://event-debug.preview.emergentagent.com
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 ```
 
@@ -410,7 +410,7 @@ tail -n 50 /var/log/supervisor/nextjs.*.log
 6. **`/app/app/globals.css`** - Theme configuration and custom animations
 
 ### Testing the Application:
-1. **Homepage:** Visit `https://newsbit-next.preview.emergentagent.com`
+1. **Homepage:** Visit `https://event-debug.preview.emergentagent.com`
    - Verify breaking news carousel rotates
    - Test category filtering
    - Try search functionality
@@ -432,7 +432,7 @@ tail -n 50 /var/log/supervisor/nextjs.*.log
 
 #### Adding a New Article (via API):
 ```bash
-curl -X POST https://newsbit-next.preview.emergentagent.com/api/news \
+curl -X POST https://event-debug.preview.emergentagent.com/api/news \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

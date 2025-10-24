@@ -5,8 +5,8 @@ A complete, full-featured news website with admin CMS, role-based authentication
 ## 🚀 Quick Start
 
 ### Access the Application:
-- **Public Website:** https://newsbit-next.preview.emergentagent.com
-- **Admin Portal:** https://newsbit-next.preview.emergentagent.com/admin/login
+- **Public Website:** https://event-debug.preview.emergentagent.com
+- **Admin Portal:** https://event-debug.preview.emergentagent.com/admin/login
 - **Credentials:** `admin` / `admin123`
 
 ### Local Development:
@@ -67,7 +67,7 @@ sudo supervisorctl restart nextjs
 ```
 MONGO_URL=mongodb://localhost:27017
 DB_NAME=shrigonda_news
-NEXT_PUBLIC_BASE_URL=https://newsbit-next.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://event-debug.preview.emergentagent.com
 JWT_SECRET=your-secret-key
 ```
 

@@ -87,17 +87,17 @@ sudo supervisorctl restart nextjs
 ### Test the Application:
 ```bash
 # Homepage should load
-curl https://newsbit-next.preview.emergentagent.com/
+curl https://event-debug.preview.emergentagent.com/
 
 # API health check
-curl https://newsbit-next.preview.emergentagent.com/api/
+curl https://event-debug.preview.emergentagent.com/api/
 
 # Get all articles
-curl https://newsbit-next.preview.emergentagent.com/api/news
+curl https://event-debug.preview.emergentagent.com/api/news
 ```
 
 ### Test Article Navigation:
-1. Visit: `https://newsbit-next.preview.emergentagent.com`
+1. Visit: `https://event-debug.preview.emergentagent.com`
 2. Click any article card → Should navigate to `/article/[articleId]`
 3. Verify full article content displays
 4. Test "Back to Home" button
@@ -108,9 +108,9 @@ curl https://newsbit-next.preview.emergentagent.com/api/news
 ## 🔑 Key Information
 
 ### URLs:
-- **Public Site:** `https://newsbit-next.preview.emergentagent.com`
-- **Admin Login:** `https://newsbit-next.preview.emergentagent.com/admin/login`
-- **API Base:** `https://newsbit-next.preview.emergentagent.com/api`
+- **Public Site:** `https://event-debug.preview.emergentagent.com`
+- **Admin Login:** `https://event-debug.preview.emergentagent.com/admin/login`
+- **API Base:** `https://event-debug.preview.emergentagent.com/api`
 
 ### Default Credentials:
 - **Username:** `admin`
@@ -139,7 +139,7 @@ curl https://newsbit-next.preview.emergentagent.com/api/news
 1. Check `/app/app/article/[id]/page.js` exists
 2. Verify `navigateToArticle()` function in `/app/app/page.js`
 3. Check Next.js routing is working: `ls -la /app/app/article/[id]/`
-4. Test with: `curl https://newsbit-next.preview.emergentagent.com/article/test-id`
+4. Test with: `curl https://event-debug.preview.emergentagent.com/article/test-id`
 
 ### If User Wants to Modify Theme:
 Edit `/app/app/globals.css`:
@@ -244,7 +244,7 @@ mongosh $MONGO_URL --eval "db.adminCommand('ping')"
 ### Issue: "Articles not loading"
 ```bash
 # Check API endpoint
-curl https://newsbit-next.preview.emergentagent.com/api/news
+curl https://event-debug.preview.emergentagent.com/api/news
 
 # Check logs for errors
 tail -n 100 /var/log/supervisor/nextjs.err.log

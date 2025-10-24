@@ -122,14 +122,14 @@ Building a modern news website with role-based authentication, manual CMS, and r
 ## How to Use
 
 ### For Public Users:
-1. Visit homepage: `https://news-hub-system.preview.emergentagent.com`
+1. Visit homepage: `https://event-debug.preview.emergentagent.com`
 2. Browse latest news and categories
 3. Click on any article to read
 4. Use search to find specific news
 5. Share articles on social media
 
 ### For Admin/Editors:
-1. Navigate to: `https://news-hub-system.preview.emergentagent.com/admin/login`
+1. Navigate to: `https://event-debug.preview.emergentagent.com/admin/login`
 2. Login with: **admin** / **admin123**
 3. Create new articles with "Create New Article" button
 4. Edit or delete existing articles

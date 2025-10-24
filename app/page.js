@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Search, Menu, X, TrendingUp, Clock, Eye, Share2, Facebook, Twitter, Linkedin, Radio, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';

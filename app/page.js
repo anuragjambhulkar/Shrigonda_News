@@ -334,10 +334,19 @@ export default function HomePage() {
                     transition={{ delay: 0.6, duration: 0.5 }}
                     className="flex gap-3"
                   >
-                    <Button size="lg" className="bg-primary hover:bg-primary/90">
+                    <Button 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/90"
+                      onClick={() => navigateToArticle(currentBreaking.id)}
+                    >
                       Read Full Story
                     </Button>
-                    <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={(e) => shareArticle(currentBreaking, 'facebook', e)}
+                    >
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </Button>

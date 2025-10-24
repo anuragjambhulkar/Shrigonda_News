@@ -461,7 +461,10 @@ export default function HomePage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full group">
+                <Card 
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full group"
+                  onClick={() => navigateToArticle(article.id)}
+                >
                   <div className="relative h-40 overflow-hidden">
                     <img 
                       src={article.image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c'}
@@ -475,9 +478,9 @@ export default function HomePage() {
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{article.excerpt}</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{new Date(article.createdAt).toLocaleDateString()}</span>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 hover:text-primary">
+                      <div className="flex items-center gap-1 text-primary font-semibold">
                         Read →
-                      </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

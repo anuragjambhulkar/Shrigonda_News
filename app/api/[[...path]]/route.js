@@ -1,53 +1,326 @@
-import { MongoClient } from 'mongodb'
-import { v4 as uuidv4 } from 'uuid'
-import { NextResponse } from 'next/server'
-
-// MongoDB connection
-let client
-let db
-
-async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URL)
-    await client.connect()
-    db = client.db(process.env.DB_NAME)
-  }
-  return db
-}
+import { NextResponse } from 'next/server';
+import { getCollection } from '@/lib/mongodb';
+import { hashPassword, comparePassword, generateToken, verifyToken, extractToken } from '@/lib/auth';
+import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to handle CORS
 function handleCORS(response) {
-  response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
-  return response
+  response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  return response;
 }
 
 // OPTIONS handler for CORS
 export async function OPTIONS() {
-  return handleCORS(new NextResponse(null, { status: 200 }))
+  return handleCORS(new NextResponse(null, { status: 200 }));
+}
+
+// Middleware to verify authentication
+async function requireAuth(request, requiredRole = null) {
+  const token = extractToken(request);
+  if (!token) {
+    return { error: 'Unauthorized', status: 401 };
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return { error: 'Invalid token', status: 401 };
+  }
+
+  if (requiredRole && !['admin', requiredRole].includes(decoded.role)) {
+    return { error: 'Forbidden', status: 403 };
+  }
+
+  return { user: decoded };
+}
+
+// Initialize default admin user
+async function initializeAdmin() {
+  try {
+    const users = await getCollection('users');
+    const adminExists = await users.findOne({ username: 'admin' });
+    
+    if (!adminExists) {
+      await users.insertOne({
+        id: uuidv4(),
+        username: 'admin',
+        password: hashPassword('admin123'),
+        role: 'admin',
+        createdAt: new Date().toISOString()
+      });
+      console.log('Default admin user created: admin/admin123');
+    }
+  } catch (error) {
+    console.error('Error initializing admin:', error);
+  }
+}
+
+// POST /api/auth/login
+async function handleLogin(request) {
+  try {
+    const { username, password } = await request.json();
+    
+    const users = await getCollection('users');
+    const user = await users.findOne({ username });
+    
+    if (!user || !comparePassword(password, user.password)) {
+      return handleCORS(NextResponse.json({ error: 'Invalid credentials' }, { status: 401 }));
+    }
+    
+    const token = generateToken(user);
+    
+    return handleCORS(NextResponse.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      }
+    }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// GET /api/auth/verify
+async function handleVerify(request) {
+  const authResult = await requireAuth(request);
+  if (authResult.error) {
+    return handleCORS(NextResponse.json({ error: authResult.error }, { status: authResult.status }));
+  }
+  
+  return handleCORS(NextResponse.json({ user: authResult.user }));
+}
+
+// POST /api/users (Admin only - create new user)
+async function handleCreateUser(request) {
+  const authResult = await requireAuth(request, 'admin');
+  if (authResult.error) {
+    return handleCORS(NextResponse.json({ error: authResult.error }, { status: authResult.status }));
+  }
+  
+  try {
+    const { username, password, role } = await request.json();
+    
+    const users = await getCollection('users');
+    const exists = await users.findOne({ username });
+    
+    if (exists) {
+      return handleCORS(NextResponse.json({ error: 'Username already exists' }, { status: 400 }));
+    }
+    
+    const newUser = {
+      id: uuidv4(),
+      username,
+      password: hashPassword(password),
+      role: role || 'editor',
+      createdAt: new Date().toISOString()
+    };
+    
+    await users.insertOne(newUser);
+    
+    return handleCORS(NextResponse.json({ 
+      message: 'User created',
+      user: { id: newUser.id, username: newUser.username, role: newUser.role }
+    }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// GET /api/news (Public - get all news)
+async function handleGetNews(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    
+    const news = await getCollection('news');
+    const query = category ? { category, published: true } : { published: true };
+    
+    const articles = await news
+      .find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray();
+    
+    return handleCORS(NextResponse.json({ articles }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// GET /api/news/:id (Public - get single article)
+async function handleGetArticle(articleId) {
+  try {
+    const news = await getCollection('news');
+    const article = await news.findOne({ id: articleId, published: true });
+    
+    if (!article) {
+      return handleCORS(NextResponse.json({ error: 'Article not found' }, { status: 404 }));
+    }
+    
+    // Increment views
+    await news.updateOne({ id: articleId }, { $inc: { views: 1 } });
+    
+    return handleCORS(NextResponse.json({ article }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// POST /api/news (Admin/Editor - create article)
+async function handleCreateArticle(request) {
+  const authResult = await requireAuth(request, 'editor');
+  if (authResult.error) {
+    return handleCORS(NextResponse.json({ error: authResult.error }, { status: authResult.status }));
+  }
+  
+  try {
+    const data = await request.json();
+    const { title, content, category, image, excerpt, tags } = data;
+    
+    const article = {
+      id: uuidv4(),
+      title,
+      content,
+      excerpt: excerpt || content.substring(0, 200),
+      category,
+      image: image || '',
+      tags: tags || [],
+      author: authResult.user.username,
+      authorId: authResult.user.userId,
+      published: true,
+      featured: false,
+      views: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    const news = await getCollection('news');
+    await news.insertOne(article);
+    
+    // Create notification
+    const notifications = await getCollection('notifications');
+    await notifications.insertOne({
+      id: uuidv4(),
+      type: 'new_article',
+      title: 'New Article Published',
+      message: `${title}`,
+      articleId: article.id,
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    
+    return handleCORS(NextResponse.json({ message: 'Article created', article }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// PUT /api/news/:id (Admin/Editor - update article)
+async function handleUpdateArticle(request, articleId) {
+  const authResult = await requireAuth(request, 'editor');
+  if (authResult.error) {
+    return handleCORS(NextResponse.json({ error: authResult.error }, { status: authResult.status }));
+  }
+  
+  try {
+    const updates = await request.json();
+    updates.updatedAt = new Date().toISOString();
+    
+    const news = await getCollection('news');
+    const result = await news.updateOne(
+      { id: articleId },
+      { $set: updates }
+    );
+    
+    if (result.matchedCount === 0) {
+      return handleCORS(NextResponse.json({ error: 'Article not found' }, { status: 404 }));
+    }
+    
+    return handleCORS(NextResponse.json({ message: 'Article updated' }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// DELETE /api/news/:id (Admin only)
+async function handleDeleteArticle(request, articleId) {
+  const authResult = await requireAuth(request, 'admin');
+  if (authResult.error) {
+    return handleCORS(NextResponse.json({ error: authResult.error }, { status: authResult.status }));
+  }
+  
+  try {
+    const news = await getCollection('news');
+    const result = await news.deleteOne({ id: articleId });
+    
+    if (result.deletedCount === 0) {
+      return handleCORS(NextResponse.json({ error: 'Article not found' }, { status: 404 }));
+    }
+    
+    return handleCORS(NextResponse.json({ message: 'Article deleted' }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// GET /api/notifications (Public - get recent notifications)
+async function handleGetNotifications(request) {
+  try {
+    const notifications = await getCollection('notifications');
+    const items = await notifications
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .toArray();
+    
+    return handleCORS(NextResponse.json({ notifications: items }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
+}
+
+// GET /api/categories (Public - get all categories)
+async function handleGetCategories() {
+  const categories = [
+    { id: 'local', name: 'Local News', icon: '🏘️' },
+    { id: 'regional', name: 'Regional', icon: '🌆' },
+    { id: 'national', name: 'National', icon: '🇮🇳' },
+    { id: 'sports', name: 'Sports', icon: '⚽' },
+    { id: 'entertainment', name: 'Entertainment', icon: '🎬' },
+    { id: 'business', name: 'Business', icon: '💼' }
+  ];
+  
+  return handleCORS(NextResponse.json({ categories }));
+}
+
+// GET /api/admin/articles (Admin/Editor - get all articles including unpublished)
+async function handleAdminGetArticles(request) {
+  const authResult = await requireAuth(request, 'editor');
+  if (authResult.error) {
+    return handleCORS(NextResponse.json({ error: authResult.error }, { status: authResult.status }));
+  }
+  
+  try {
+    const news = await getCollection('news');
+    const articles = await news.find({}).sort({ createdAt: -1 }).toArray();
+    
+    return handleCORS(NextResponse.json({ articles }));
+  } catch (error) {
+    return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }));
+  }
 }
 
 // Route handler function
 async function handleRoute(request, { params }) {
-  const { path = [] } = params
+  await initializeAdmin();
+  
+  const { path = [] } = params;
   const route = `/${path.join('/')}`
-  const method = request.method
-
-  try {
-    const db = await connectToMongo()
-
-    // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/root' && method === 'GET') {
-      return handleCORS(NextResponse.json({ message: "Hello World" }))
-    }
-    // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/' && method === 'GET') {
-      return handleCORS(NextResponse.json({ message: "Hello World" }))
-    }
-
-    // Status endpoints - POST /api/status
     if (route === '/status' && method === 'POST') {
       const body = await request.json()
       

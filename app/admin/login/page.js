@@ -45,13 +45,13 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-red-950">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="w-[400px] shadow-2xl">
+        <Card className="w-[400px] shadow-2xl border-red-900/20">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <img 
@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
                 className="h-20 w-auto"
               />
             </div>
-            <CardTitle className="text-2xl gold-text">Admin Portal</CardTitle>
+            <CardTitle className="text-2xl text-primary">Admin Portal</CardTitle>
             <CardDescription>Login to manage Shrigonda News</CardDescription>
           </CardHeader>
           <CardContent>
@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
                 {loading ? 'Logging in...' : 'Login'}
               </Button>
               <p className="text-xs text-center text-muted-foreground">

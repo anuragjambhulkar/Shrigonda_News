@@ -180,7 +180,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b bg-black text-white">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <img 
@@ -189,16 +189,16 @@ export default function AdminDashboard() {
               className="h-10 w-auto"
             />
             <div>
-              <h1 className="text-xl font-bold gold-text">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground">Welcome, {user.username}</p>
+              <h1 className="text-xl font-bold text-primary">Admin Dashboard</h1>
+              <p className="text-xs text-gray-400">Welcome, {user.username}</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => router.push('/')}>
+            <Button variant="outline" onClick={() => router.push('/')} className="border-white/20 text-white hover:bg-white/10">
               View Site
             </Button>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button variant="outline" onClick={handleLogout} className="border-white/20 text-white hover:bg-white/10">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -209,40 +209,40 @@ export default function AdminDashboard() {
       <div className="container py-8">
         {/* Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Articles</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <FileText className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-2xl font-bold text-primary">{stats.total}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Published</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.published}</div>
+              <div className="text-2xl font-bold text-primary">{stats.published}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalViews}</div>
+              <div className="text-2xl font-bold text-primary">{stats.totalViews}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Action Button */}
         <div className="mb-6">
-          <Button onClick={() => { setShowEditor(true); setEditingArticle(null); }} size="lg">
+          <Button onClick={() => { setShowEditor(true); setEditingArticle(null); }} size="lg" className="bg-primary hover:bg-primary/90">
             <PlusCircle className="h-5 w-5 mr-2" />
             Create New Article
           </Button>
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
           <Dialog open={showEditor} onOpenChange={setShowEditor}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-primary">
                   {editingArticle ? 'Edit Article' : 'Create New Article'}
                 </DialogTitle>
               </DialogHeader>
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button type="submit">
+                  <Button type="submit" className="bg-primary hover:bg-primary/90">
                     <Save className="h-4 w-4 mr-2" />
                     {editingArticle ? 'Update' : 'Publish'}
                   </Button>
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Articles List */}
-        <Card>
+        <Card className="border-primary/20">
           <CardHeader>
             <CardTitle>All Articles</CardTitle>
           </CardHeader>
@@ -358,12 +358,12 @@ export default function AdminDashboard() {
                     key={article.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-bold">{article.title}</h3>
-                        <Badge>{article.category}</Badge>
+                        <Badge className="bg-primary text-white">{article.category}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {article.excerpt || article.content.substring(0, 150)}
@@ -379,11 +379,11 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="flex gap-2 ml-4">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(article)}>
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(article)} className="hover:border-primary hover:text-primary">
                         <Edit className="h-4 w-4" />
                       </Button>
                       {user.role === 'admin' && (
-                        <Button variant="outline" size="sm" onClick={() => handleDelete(article.id)}>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(article.id)} className="hover:border-red-500 hover:text-red-500">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}

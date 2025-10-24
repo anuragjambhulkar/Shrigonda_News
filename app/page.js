@@ -354,29 +354,29 @@ export default function HomePage() {
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="border-white/20 text-white hover:bg-white/10"
+                      className="border-white text-white hover:bg-white/10 flex items-center gap-2"
                       onClick={(e) => shareArticle(currentBreaking, 'facebook', e)}
                     >
-                      <Facebook className="h-4 w-4 mr-2" />
-                      Facebook
+                      <Facebook className="h-4 w-4" />
+                      <span>Facebook</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="border-white/20 text-white hover:bg-white/10"
+                      className="border-white text-white hover:bg-white/10 flex items-center gap-2"
                       onClick={(e) => shareArticle(currentBreaking, 'twitter', e)}
                     >
-                      <Twitter className="h-4 w-4 mr-2" />
-                      Twitter
+                      <Twitter className="h-4 w-4" />
+                      <span>Twitter</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="border-white/20 text-white hover:bg-white/10"
+                      className="border-white text-white hover:bg-white/10 flex items-center gap-2"
                       onClick={(e) => shareArticle(currentBreaking, 'linkedin', e)}
                     >
-                      <Linkedin className="h-4 w-4 mr-2" />
-                      LinkedIn
+                      <Linkedin className="h-4 w-4" />
+                      <span>LinkedIn</span>
                     </Button>
                   </motion.div>
                 </div>

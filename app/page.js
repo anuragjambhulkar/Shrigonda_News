@@ -99,18 +99,23 @@ export default function HomePage() {
   };
 
   const navigateToArticle = (articleId) => {
-    window.location.href = `/article/${articleId}`;
+    router.push(`/article/${articleId}`);
   };
 
   const shareArticle = (article, platform, e) => {
-    e?.stopPropagation(); // Prevent card click when sharing
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
     const url = `${window.location.origin}/article/${article.id}`;
-    const text = `${article.title} - Shrigonda News`;
+    const watermark = `\n\n📰 Via Shrigonda News - Your trusted source for local news`;
+    const text = `${article.title}${watermark}`;
     
     let shareUrl = '';
     switch(platform) {
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
         break;
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
@@ -120,7 +125,10 @@ export default function HomePage() {
         break;
     }
     
-    window.open(shareUrl, '_blank', 'width=600,height=400');
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+      toast.success('Opening share dialog...');
+    }
   };
 
   const latestArticles = filteredArticles.slice(0, 5);

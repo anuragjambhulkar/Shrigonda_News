@@ -4,53 +4,53 @@
 
 @layer base {
   :root {
-    --background: 40 20% 97%;
-    --foreground: 30 15% 10%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
     --card: 0 0% 100%;
-    --card-foreground: 30 15% 10%;
+    --card-foreground: 0 0% 5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 30 15% 10%;
-    --primary: 38 75% 40%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 84% 60%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 40 20% 95%;
-    --muted-foreground: 30 10% 40%;
-    --accent: 38 80% 50%;
-    --accent-foreground: 0 0% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 40 20% 85%;
-    --input: 40 20% 85%;
-    --ring: 38 75% 40%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 0 84% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 84% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 84% 50%;
     --radius: 0.5rem;
-    --chart-1: 38 75% 50%;
-    --chart-2: 0 84% 60%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 45 90% 60%;
-    --chart-5: 15 85% 55%;
+    --chart-1: 0 84% 50%;
+    --chart-2: 0 0% 10%;
+    --chart-3: 0 84% 40%;
+    --chart-4: 0 0% 30%;
+    --chart-5: 0 84% 60%;
   }
 
   .dark {
-    --background: 30 15% 8%;
-    --foreground: 40 10% 95%;
-    --card: 30 12% 10%;
-    --card-foreground: 40 10% 95%;
-    --popover: 30 12% 10%;
-    --popover-foreground: 40 10% 95%;
-    --primary: 38 75% 50%;
-    --primary-foreground: 0 0% 10%;
-    --secondary: 0 84% 60%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 30 12% 15%;
-    --muted-foreground: 40 10% 60%;
-    --accent: 38 80% 45%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 30 12% 20%;
-    --input: 30 12% 20%;
-    --ring: 38 75% 50%;
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 84% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 84% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 84% 50%;
   }
 }
 
@@ -66,11 +66,13 @@
 
 @layer utilities {
   .news-gradient {
-    background: linear-gradient(135deg, #B8860B 0%, #DAA520 50%, #DC2626 100%);
+    background: linear-gradient(135deg, #DC2626 0%, #7F1D1D 50%, #000000 100%);
   }
-  .gold-text {
-    @apply text-transparent bg-clip-text;
-    background-image: linear-gradient(135deg, #B8860B, #DAA520);
+  .breaking-gradient {
+    background: linear-gradient(90deg, #DC2626 0%, #000000 100%);
+  }
+  .red-text {
+    @apply text-primary;
   }
   .animate-slide-up {
     animation: slideUp 0.6s ease-out;
@@ -94,6 +96,39 @@
     }
     to {
       opacity: 1;
+    }
+  }
+  .animate-slide-left {
+    animation: slideLeft 20s linear infinite;
+  }
+  @keyframes slideLeft {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(220, 38, 38, 0.8);
+    }
+  }
+  .animate-ticker {
+    animation: ticker 30s linear infinite;
+  }
+  @keyframes ticker {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
     }
   }
 }

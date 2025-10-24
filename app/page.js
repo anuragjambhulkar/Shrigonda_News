@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Bell, Search, Menu, X, TrendingUp, Clock, Eye, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, Search, Menu, X, TrendingUp, Clock, Eye, Share2, Facebook, Twitter, Linkedin, Radio, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,7 @@ export default function HomePage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentBreakingIndex, setCurrentBreakingIndex] = useState(0);
 
   useEffect(() => {
     loadArticles();
@@ -40,6 +41,16 @@ export default function HomePage() {
   useEffect(() => {
     filterArticles();
   }, [selectedCategory, searchQuery, articles]);
+
+  // Auto-rotate breaking news every 5 seconds
+  useEffect(() => {
+    if (filteredArticles.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentBreakingIndex((prev) => (prev + 1) % Math.min(filteredArticles.length, 5));
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [filteredArticles]);
 
   const loadArticles = async () => {
     try {
@@ -105,9 +116,10 @@ export default function HomePage() {
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
-  const latestArticle = filteredArticles[0];
-  const trendingArticles = filteredArticles.slice(1, 4);
-  const regularArticles = filteredArticles.slice(4);
+  const latestArticles = filteredArticles.slice(0, 5);
+  const currentBreaking = latestArticles[currentBreakingIndex];
+  const trendingArticles = filteredArticles.slice(5, 8);
+  const regularArticles = filteredArticles.slice(8);
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,7 +133,7 @@ export default function HomePage() {
               className="h-12 w-auto"
             />
             <div className="hidden md:block">
-              <h1 className="text-2xl font-bold gold-text">Shrigonda News</h1>
+              <h1 className="text-2xl font-bold text-primary">Shrigonda News</h1>
               <p className="text-xs text-muted-foreground">Your Love for the City</p>
             </div>
           </div>
@@ -149,7 +161,7 @@ export default function HomePage() {
               >
                 <Bell className="h-5 w-5" />
                 {notifications.length > 0 && (
-                  <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground flex items-center justify-center">
+                  <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary text-[10px] font-bold text-white flex items-center justify-center">
                     {notifications.length}
                   </span>
                 )}
@@ -209,23 +221,150 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* Hero Section */}
-      <section className="relative news-gradient text-white py-20">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-3xl"
-          >
-            <h2 className="text-5xl font-bold mb-4">Breaking News</h2>
-            <p className="text-xl opacity-90">Stay updated with the latest happenings in Shrigonda and beyond</p>
-          </motion.div>
+      {/* Breaking News Ticker */}
+      <div className="breaking-gradient text-white overflow-hidden">
+        <div className="container flex items-center h-12">
+          <div className="flex items-center gap-2 mr-4 animate-pulse">
+            <Radio className="h-5 w-5 text-white" />
+            <span className="font-bold text-sm whitespace-nowrap">BREAKING NEWS</span>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <div className="flex animate-ticker">
+              {latestArticles.map((article, idx) => (
+                <span key={idx} className="inline-flex items-center mr-8 text-sm whitespace-nowrap">
+                  <AlertCircle className="h-3 w-3 mr-2" />
+                  {article.title}
+                </span>
+              ))}
+              {latestArticles.map((article, idx) => (
+                <span key={`dup-${idx}`} className="inline-flex items-center mr-8 text-sm whitespace-nowrap">
+                  <AlertCircle className="h-3 w-3 mr-2" />
+                  {article.title}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
+
+      {/* Dynamic Breaking News Hero */}
+      {currentBreaking && (
+        <section className="relative bg-black text-white overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBreakingIndex}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.7 }}
+              className="relative"
+            >
+              {/* Background Image with Overlay */}
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src={currentBreaking.image || 'https://images.unsplash.com/photo-1495020689067-958852a7765e'}
+                  alt={currentBreaking.title}
+                  className="w-full h-full object-cover opacity-40"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+              </div>
+
+              {/* Content */}
+              <div className="container relative z-10 py-20">
+                <div className="max-w-3xl">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    <Badge className="mb-4 bg-primary text-white border-0 animate-pulse-glow">
+                      <Radio className="h-3 w-3 mr-1 animate-pulse" />
+                      BREAKING NOW
+                    </Badge>
+                  </motion.div>
+
+                  <motion.h1
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="text-5xl md:text-6xl font-bold mb-4 leading-tight"
+                  >
+                    {currentBreaking.title}
+                  </motion.h1>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="text-xl text-gray-300 mb-6"
+                  >
+                    {currentBreaking.excerpt}
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                    className="flex items-center gap-6 text-sm text-gray-400 mb-8"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      {new Date(currentBreaking.createdAt).toLocaleTimeString('en-IN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      {currentBreaking.views} views
+                    </span>
+                    <Badge variant="outline" className="border-white/20 text-white">
+                      {currentBreaking.category}
+                    </Badge>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                    className="flex gap-3"
+                  >
+                    <Button size="lg" className="bg-primary hover:bg-primary/90">
+                      Read Full Story
+                    </Button>
+                    <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Progress Indicators */}
+              <div className="absolute bottom-8 left-0 right-0 z-10">
+                <div className="container">
+                  <div className="flex gap-2 max-w-3xl">
+                    {latestArticles.map((_, idx) => (
+                      <motion.div
+                        key={idx}
+                        className={`h-1 flex-1 rounded-full transition-all ${
+                          idx === currentBreakingIndex ? 'bg-primary' : 'bg-white/30'
+                        }`}
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: idx === currentBreakingIndex ? 1 : 0.3 }}
+                        transition={{ duration: idx === currentBreakingIndex ? 5 : 0.3 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </section>
+      )}
 
       {/* Categories */}
-      <section className="border-b">
+      <section className="border-b bg-muted/30">
         <div className="container py-4">
           <div className="flex gap-2 overflow-x-auto">
             <Button
@@ -249,63 +388,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Latest/Featured Article */}
-      {latestArticle && (
-        <section className="container py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="overflow-hidden border-2 border-primary">
-              <div className="grid md:grid-cols-2 gap-0">
-                <div className="relative h-64 md:h-full">
-                  <img 
-                    src={latestArticle.image || 'https://images.unsplash.com/photo-1495020689067-958852a7765e'}
-                    alt={latestArticle.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <Badge className="absolute top-4 left-4 bg-secondary">
-                    <TrendingUp className="h-3 w-3 mr-1" /> Latest
-                  </Badge>
-                </div>
-                <CardContent className="p-8 flex flex-col justify-center">
-                  <Badge className="w-fit mb-4">{latestArticle.category}</Badge>
-                  <h3 className="text-3xl font-bold mb-4">{latestArticle.title}</h3>
-                  <p className="text-muted-foreground mb-6">{latestArticle.excerpt}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {new Date(latestArticle.createdAt).toLocaleDateString()}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      {latestArticle.views} views
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button>Read More</Button>
-                    <Button variant="outline" size="icon" onClick={() => shareArticle(latestArticle, 'facebook')}>
-                      <Facebook className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => shareArticle(latestArticle, 'twitter')}>
-                      <Twitter className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => shareArticle(latestArticle, 'linkedin')}>
-                      <Linkedin className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </div>
-            </Card>
-          </motion.div>
-        </section>
-      )}
-
       {/* Trending Articles */}
       {trendingArticles.length > 0 && (
         <section className="container py-12">
-          <h2 className="text-3xl font-bold mb-8 gold-text">Trending Stories</h2>
+          <div className="flex items-center gap-2 mb-8">
+            <TrendingUp className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold">Trending Now</h2>
+          </div>
           <div className="grid md:grid-cols-3 gap-6">
             {trendingArticles.map((article, idx) => (
               <motion.div
@@ -314,17 +403,19 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                  <div className="relative h-48">
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                  <div className="relative h-48 overflow-hidden">
                     <img 
                       src={article.image || 'https://images.unsplash.com/photo-1498644035638-2c3357894b10'}
                       alt={article.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-primary text-white">{article.category}</Badge>
+                    </div>
                   </div>
                   <CardContent className="p-6">
-                    <Badge className="mb-2">{article.category}</Badge>
-                    <h3 className="text-xl font-bold mb-2 line-clamp-2">{article.title}</h3>
+                    <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{article.excerpt}</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{new Date(article.createdAt).toLocaleDateString()}</span>
@@ -343,8 +434,8 @@ export default function HomePage() {
 
       {/* Regular Articles */}
       {regularArticles.length > 0 && (
-        <section className="container py-12">
-          <h2 className="text-3xl font-bold mb-8">More Stories</h2>
+        <section className="container py-12 bg-muted/20">
+          <h2 className="text-3xl font-bold mb-8">Latest Stories</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {regularArticles.map((article, idx) => (
               <motion.div
@@ -353,21 +444,21 @@ export default function HomePage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <div className="relative h-40">
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full group">
+                  <div className="relative h-40 overflow-hidden">
                     <img 
                       src={article.image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c'}
                       alt={article.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
                   <CardContent className="p-4">
                     <Badge className="mb-2 text-xs">{article.category}</Badge>
-                    <h3 className="font-bold mb-2 line-clamp-2">{article.title}</h3>
+                    <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{article.excerpt}</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{new Date(article.createdAt).toLocaleDateString()}</span>
-                      <Button variant="ghost" size="sm" className="h-6 px-2">
+                      <Button variant="ghost" size="sm" className="h-6 px-2 hover:text-primary">
                         Read →
                       </Button>
                     </div>
@@ -380,47 +471,47 @@ export default function HomePage() {
       )}
 
       {/* Footer */}
-      <footer className="news-gradient text-white mt-20">
+      <footer className="bg-black text-white mt-20">
         <div className="container py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">Shrigonda News</h3>
-              <p className="text-sm opacity-90">Your trusted source for local and national news</p>
+              <h3 className="font-bold text-lg mb-4 text-primary">Shrigonda News</h3>
+              <p className="text-sm text-gray-400">Your trusted source for local and national news</p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Categories</h4>
-              <ul className="space-y-2 text-sm opacity-90">
+              <ul className="space-y-2 text-sm text-gray-400">
                 {categories.map(cat => (
-                  <li key={cat.id}>{cat.name}</li>
+                  <li key={cat.id} className="hover:text-white cursor-pointer transition-colors">{cat.name}</li>
                 ))}
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm opacity-90">
-                <li>About Us</li>
-                <li>Contact</li>
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li className="hover:text-white cursor-pointer transition-colors">About Us</li>
+                <li className="hover:text-white cursor-pointer transition-colors">Contact</li>
+                <li className="hover:text-white cursor-pointer transition-colors">Privacy Policy</li>
+                <li className="hover:text-white cursor-pointer transition-colors">Terms of Service</li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Follow Us</h4>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon" className="bg-white/10 border-white/20">
+                <Button variant="outline" size="icon" className="bg-white/10 border-white/20 hover:bg-primary">
                   <Facebook className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="bg-white/10 border-white/20">
+                <Button variant="outline" size="icon" className="bg-white/10 border-white/20 hover:bg-primary">
                   <Twitter className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="bg-white/10 border-white/20">
+                <Button variant="outline" size="icon" className="bg-white/10 border-white/20 hover:bg-primary">
                   <Linkedin className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
           <Separator className="my-8 bg-white/20" />
-          <p className="text-center text-sm opacity-75">© 2025 Shrigonda News. All rights reserved.</p>
+          <p className="text-center text-sm text-gray-400">© 2025 Shrigonda News. All rights reserved.</p>
         </div>
       </footer>
     </div>

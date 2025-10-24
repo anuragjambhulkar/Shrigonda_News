@@ -417,7 +417,10 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                <Card 
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                  onClick={() => navigateToArticle(article.id)}
+                >
                   <div className="relative h-48 overflow-hidden">
                     <img 
                       src={article.image || 'https://images.unsplash.com/photo-1498644035638-2c3357894b10'}

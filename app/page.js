@@ -21,6 +21,7 @@ const categories = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');

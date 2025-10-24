@@ -354,7 +354,7 @@ export default function HomePage() {
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="border-white text-white hover:bg-white/10 flex items-center gap-2"
+                      className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'facebook', e)}
                     >
                       <Facebook className="h-4 w-4" />
@@ -363,7 +363,7 @@ export default function HomePage() {
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="border-white text-white hover:bg-white/10 flex items-center gap-2"
+                      className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'twitter', e)}
                     >
                       <Twitter className="h-4 w-4" />
@@ -372,7 +372,7 @@ export default function HomePage() {
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="border-white text-white hover:bg-white/10 flex items-center gap-2"
+                      className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'linkedin', e)}
                     >
                       <Linkedin className="h-4 w-4" />

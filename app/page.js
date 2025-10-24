@@ -342,7 +342,7 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6, duration: 0.5 }}
-                    className="flex gap-3"
+                    className="flex gap-3 flex-wrap"
                   >
                     <Button 
                       size="lg" 
@@ -357,8 +357,26 @@ export default function HomePage() {
                       className="border-white/20 text-white hover:bg-white/10"
                       onClick={(e) => shareArticle(currentBreaking, 'facebook', e)}
                     >
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Share
+                      <Facebook className="h-4 w-4 mr-2" />
+                      Facebook
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={(e) => shareArticle(currentBreaking, 'twitter', e)}
+                    >
+                      <Twitter className="h-4 w-4 mr-2" />
+                      Twitter
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={(e) => shareArticle(currentBreaking, 'linkedin', e)}
+                    >
+                      <Linkedin className="h-4 w-4 mr-2" />
+                      LinkedIn
                     </Button>
                   </motion.div>
                 </div>

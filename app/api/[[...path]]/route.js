@@ -320,58 +320,71 @@ async function handleRoute(request, { params }) {
   await initializeAdmin();
   
   const { path = [] } = params;
-  const route = `/${path.join('/')}`
-    if (route === '/status' && method === 'POST') {
-      const body = await request.json()
-      
-      if (!body.client_name) {
-        return handleCORS(NextResponse.json(
-          { error: "client_name is required" }, 
-          { status: 400 }
-        ))
-      }
-
-      const statusObj = {
-        id: uuidv4(),
-        client_name: body.client_name,
-        timestamp: new Date()
-      }
-
-      await db.collection('status_checks').insertOne(statusObj)
-      return handleCORS(NextResponse.json(statusObj))
+  const route = `/${path.join('/')}`;
+  const method = request.method;
+  
+  try {
+    // Root endpoint
+    if (route === '/' && method === 'GET') {
+      return handleCORS(NextResponse.json({ message: "Shrigonda News API" }));
     }
-
-    // Status endpoints - GET /api/status
-    if (route === '/status' && method === 'GET') {
-      const statusChecks = await db.collection('status_checks')
-        .find({})
-        .limit(1000)
-        .toArray()
-
-      // Remove MongoDB's _id field from response
-      const cleanedStatusChecks = statusChecks.map(({ _id, ...rest }) => rest)
-      
-      return handleCORS(NextResponse.json(cleanedStatusChecks))
+    
+    // Public routes
+    if (route === '/news' || route === '/news/') {
+      if (method === 'GET') return handleGetNews(request);
+      if (method === 'POST') return handleCreateArticle(request);
     }
-
+    
+    if (route.startsWith('/news/') && route.split('/').filter(Boolean).length === 2) {
+      const articleId = route.split('/').filter(Boolean)[1];
+      if (method === 'GET') return handleGetArticle(articleId);
+      if (method === 'PUT') return handleUpdateArticle(request, articleId);
+      if (method === 'DELETE') return handleDeleteArticle(request, articleId);
+    }
+    
+    if (route === '/categories' && method === 'GET') {
+      return handleGetCategories();
+    }
+    
+    if (route === '/notifications' && method === 'GET') {
+      return handleGetNotifications(request);
+    }
+    
+    // Auth routes
+    if (route === '/auth/login' && method === 'POST') {
+      return handleLogin(request);
+    }
+    
+    if (route === '/auth/verify' && method === 'GET') {
+      return handleVerify(request);
+    }
+    
+    // Admin routes
+    if (route === '/users' && method === 'POST') {
+      return handleCreateUser(request);
+    }
+    
+    if (route === '/admin/articles' && method === 'GET') {
+      return handleAdminGetArticles(request);
+    }
+    
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
       { status: 404 }
-    ))
-
+    ));
   } catch (error) {
-    console.error('API Error:', error)
+    console.error('API Error:', error);
     return handleCORS(NextResponse.json(
-      { error: "Internal server error" }, 
+      { error: "Internal server error", message: error.message }, 
       { status: 500 }
-    ))
+    ));
   }
 }
 
 // Export all HTTP methods
-export const GET = handleRoute
-export const POST = handleRoute
-export const PUT = handleRoute
-export const DELETE = handleRoute
-export const PATCH = handleRoute
+export const GET = handleRoute;
+export const POST = handleRoute;
+export const PUT = handleRoute;
+export const DELETE = handleRoute;
+export const PATCH = handleRoute;

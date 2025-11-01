@@ -1,7 +1,7 @@
-# 🤖 Agent Handoff Prompt - Shrigonda News Project
+# 🤖 Agent Handoff Prompt - I Love Shrigonda News Project
 
 ## Quick Context
-You are taking over the **Shrigonda News** project - a fully functional news website with admin CMS. The project is **100% complete and working**. All features have been implemented including the new individual article pages.
+You are taking over the **I Love Shrigonda News** project - a fully functional news website with admin CMS. The project is **100% complete and working**. All features have been implemented including the new individual article pages.
 
 ---
 

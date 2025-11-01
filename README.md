@@ -1,4 +1,4 @@
-# Shrigonda News - Modern News Website
+# I Love Shrigonda News - Modern News Website
 
 A complete, full-featured news website with admin CMS, role-based authentication, and real-time notifications.
 

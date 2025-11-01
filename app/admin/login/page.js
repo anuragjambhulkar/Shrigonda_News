@@ -17,6 +17,7 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
+    console.log('handleLogin called');
     e.preventDefault();
     setLoading(true);
 
@@ -56,12 +57,12 @@ export default function AdminLoginPage() {
             <div className="flex justify-center mb-4">
               <img 
                 src="https://customer-assets.emergentagent.com/job_754a0040-d589-4dfd-90f1-615496373220/artifacts/7inmznbe_logo.jpg" 
-                alt="Shrigonda News" 
+                alt="I Love Shrigonda News" 
                 className="h-20 w-auto"
               />
             </div>
             <CardTitle className="text-2xl text-primary">Admin Portal</CardTitle>
-            <CardDescription>Login to manage Shrigonda News</CardDescription>
+            <CardDescription>Login to manage I Love Shrigonda News</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">

@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Search, Menu, X, TrendingUp, Clock, Eye, Share2, Facebook, Twitter, Linkedin, Radio, AlertCircle } from 'lucide-react';
+import {
+  Bell, Search, Menu, X, TrendingUp, Clock, Eye,
+  Facebook, Twitter, Linkedin, Radio, AlertCircle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -34,8 +37,6 @@ export default function HomePage() {
   useEffect(() => {
     loadArticles();
     loadNotifications();
-    
-    // Poll for new notifications every 10 seconds
     const interval = setInterval(loadNotifications, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -44,11 +45,10 @@ export default function HomePage() {
     filterArticles();
   }, [selectedCategory, searchQuery, articles]);
 
-  // Auto-rotate breaking news every 5 seconds
   useEffect(() => {
     if (filteredArticles.length > 1) {
       const interval = setInterval(() => {
-        setCurrentBreakingIndex((prev) => (prev + 1) % Math.min(filteredArticles.length, 5));
+        setCurrentBreakingIndex(prev => (prev + 1) % Math.min(filteredArticles.length, 5));
       }, 5000);
       return () => clearInterval(interval);
     }
@@ -58,7 +58,9 @@ export default function HomePage() {
     try {
       const res = await fetch('/api/news');
       const data = await res.json();
-      setArticles(data.articles || []);
+      console.log('Response data from /api/news:', JSON.stringify(data, null, 2));
+      if (res.ok) setArticles(data.articles || []);
+      else setArticles([]);
     } catch (error) {
       console.error('Failed to load articles:', error);
     }
@@ -70,7 +72,7 @@ export default function HomePage() {
       const data = await res.json();
       const unreadNotifs = (data.notifications || []).filter(n => !n.read);
       setNotifications(unreadNotifs);
-      
+
       if (unreadNotifs.length > 0 && notifications.length < unreadNotifs.length) {
         toast.success('New article published!', {
           description: unreadNotifs[0].message
@@ -83,39 +85,36 @@ export default function HomePage() {
 
   const filterArticles = () => {
     let filtered = articles;
-    
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(a => a.category === selectedCategory);
     }
-    
     if (searchQuery) {
-      filtered = filtered.filter(a => 
+      filtered = filtered.filter(a =>
         a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         a.content.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
     setFilteredArticles(filtered);
   };
 
   const navigateToArticle = (articleId) => {
+    if (!articleId) {
+      console.warn('Missing article ID');
+      return;
+    }
     router.push(`/article/${articleId}`);
   };
 
   const shareArticle = (article, platform, e) => {
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    
-    const url = `${window.location.origin}/article/${article.id}`;
-    const watermark = `\n\n📰 Via Shrigonda News - Your trusted source for local news`;
-    const text = `${article.title}${watermark}`;
-    
+    e?.stopPropagation();
+    const articleId = article.id || article._id;
+    const url = `${window.location.origin}/article/${articleId}`;
+    const text = `${article.title}\n\n📰 Via I Love Shrigonda News - Your trusted source for local news`;
+
     let shareUrl = '';
-    switch(platform) {
+    switch (platform) {
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         break;
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
@@ -124,11 +123,8 @@ export default function HomePage() {
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
         break;
     }
-    
-    if (shareUrl) {
-      window.open(shareUrl, '_blank', 'width=600,height=400');
-      toast.success('Opening share dialog...');
-    }
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+    toast.success('Opening share dialog...');
   };
 
   const latestArticles = filteredArticles.slice(0, 5);
@@ -138,26 +134,26 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_754a0040-d589-4dfd-90f1-615496373220/artifacts/7inmznbe_logo.jpg" 
-              alt="Shrigonda News" 
+            <img
+              src="https://customer-assets.emergentagent.com/job_754a0040-d589-4dfd-90f1-615496373220/artifacts/7inmznbe_logo.jpg"
+              alt="I Love Shrigonda News"
               className="h-12 w-auto"
             />
             <div className="hidden md:block">
-              <h1 className="text-2xl font-bold text-primary">Shrigonda News</h1>
+              <h1 className="text-2xl font-bold text-primary">I Love Shrigonda News</h1>
               <p className="text-xs text-muted-foreground">Your Love for the City</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {/* Search */}
             <div className="hidden md:flex items-center gap-2">
-              <Input 
-                placeholder="Search news..." 
+              <Input
+                placeholder="Search news..."
                 className="w-64"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -166,11 +162,11 @@ export default function HomePage() {
                 <Search className="h-4 w-4" />
               </Button>
             </div>
-            
+
             {/* Notifications */}
             <div className="relative">
-              <Button 
-                size="icon" 
+              <Button
+                size="icon"
                 variant="ghost"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
@@ -181,7 +177,7 @@ export default function HomePage() {
                   </span>
                 )}
               </Button>
-              
+
               {showNotifications && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -193,8 +189,8 @@ export default function HomePage() {
                     <p className="text-sm text-muted-foreground">No new notifications</p>
                   ) : (
                     <div className="space-y-2">
-                      {notifications.map(notif => (
-                        <div key={notif.id} className="text-sm p-2 bg-muted rounded">
+                      {notifications.map((notif, idx) => (
+                        <div key={notif.id || idx} className="text-sm p-2 bg-muted rounded">
                           <p className="font-medium">{notif.title}</p>
                           <p className="text-muted-foreground">{notif.message}</p>
                         </div>
@@ -204,11 +200,11 @@ export default function HomePage() {
                 </motion.div>
               )}
             </div>
-            
+
             {/* Mobile Menu */}
-            <Button 
-              size="icon" 
-              variant="ghost" 
+            <Button
+              size="icon"
+              variant="ghost"
               className="md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -216,8 +212,7 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
-        
-        {/* Mobile Menu */}
+
         {mobileMenuOpen && (
           <motion.div
             initial={{ height: 0 }}
@@ -225,8 +220,8 @@ export default function HomePage() {
             className="md:hidden border-t"
           >
             <div className="container py-4">
-              <Input 
-                placeholder="Search news..." 
+              <Input
+                placeholder="Search news..."
                 className="mb-4"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -246,13 +241,7 @@ export default function HomePage() {
           <div className="flex-1 overflow-hidden">
             <div className="flex animate-ticker">
               {latestArticles.map((article, idx) => (
-                <span key={idx} className="inline-flex items-center mr-8 text-sm whitespace-nowrap">
-                  <AlertCircle className="h-3 w-3 mr-2" />
-                  {article.title}
-                </span>
-              ))}
-              {latestArticles.map((article, idx) => (
-                <span key={`dup-${idx}`} className="inline-flex items-center mr-8 text-sm whitespace-nowrap">
+                <span key={article.id || article._id || idx} className="inline-flex items-center mr-8 text-sm whitespace-nowrap">
                   <AlertCircle className="h-3 w-3 mr-2" />
                   {article.title}
                 </span>
@@ -262,7 +251,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Dynamic Breaking News Hero */}
+      {/* Dynamic Breaking Section */}
       {currentBreaking && (
         <section className="relative bg-black text-white overflow-hidden">
           <AnimatePresence mode="wait">
@@ -274,9 +263,8 @@ export default function HomePage() {
               transition={{ duration: 0.7 }}
               className="relative"
             >
-              {/* Background Image with Overlay */}
               <div className="absolute inset-0 z-0">
-                <img 
+                <img
                   src={currentBreaking.image || 'https://images.unsplash.com/photo-1495020689067-958852a7765e'}
                   alt={currentBreaking.title}
                   className="w-full h-full object-cover opacity-40"
@@ -284,119 +272,67 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
               </div>
 
-              {/* Content */}
               <div className="container relative z-10 py-20">
                 <div className="max-w-3xl">
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                  >
-                    <Badge className="mb-4 bg-primary text-white border-0 animate-pulse-glow">
-                      <Radio className="h-3 w-3 mr-1 animate-pulse" />
-                      BREAKING NOW
-                    </Badge>
-                  </motion.div>
+                  <Badge className="mb-4 bg-primary text-white border-0 animate-pulse-glow">
+                    <Radio className="h-3 w-3 mr-1 animate-pulse" /> BREAKING NOW
+                  </Badge>
 
-                  <motion.h1
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="text-5xl md:text-6xl font-bold mb-4 leading-tight"
-                  >
+                  <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
                     {currentBreaking.title}
-                  </motion.h1>
+                  </h1>
 
-                  <motion.p
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-xl text-gray-300 mb-6"
-                  >
+                  <p className="text-xl text-gray-300 mb-6">
                     {currentBreaking.excerpt}
-                  </motion.p>
+                  </p>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                    className="flex items-center gap-6 text-sm text-gray-400 mb-8"
-                  >
+                  <div className="flex items-center gap-6 text-sm text-gray-400 mb-8">
                     <span className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
                       {new Date(currentBreaking.createdAt).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit'
+                        hour: '2-digit', minute: '2-digit'
                       })}
                     </span>
                     <span className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      {currentBreaking.views} views
+                      <Eye className="h-4 w-4" /> {currentBreaking.views} views
                     </span>
                     <Badge variant="outline" className="border-white/20 text-white">
                       {currentBreaking.category}
                     </Badge>
-                  </motion.div>
+                  </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.5 }}
-                    className="flex gap-3 flex-wrap"
-                  >
-                    <Button 
-                      size="lg" 
+                  <div className="flex gap-3 flex-wrap">
+                    <Button
+                      size="lg"
                       className="bg-primary hover:bg-primary/90"
-                      onClick={() => navigateToArticle(currentBreaking.id)}
+                      onClick={() => navigateToArticle(currentBreaking.id || currentBreaking._id)}
                     >
                       Read Full Story
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      variant="outline"
+                      size="lg"
                       className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'facebook', e)}
                     >
-                      <Facebook className="h-4 w-4" />
-                      <span>Facebook</span>
+                      <Facebook className="h-4 w-4" /> Facebook
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      variant="outline"
+                      size="lg"
                       className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'twitter', e)}
                     >
-                      <Twitter className="h-4 w-4" />
-                      <span>Twitter</span>
+                      <Twitter className="h-4 w-4" /> Twitter
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      variant="outline"
+                      size="lg"
                       className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'linkedin', e)}
                     >
-                      <Linkedin className="h-4 w-4" />
-                      <span>LinkedIn</span>
+                      <Linkedin className="h-4 w-4" /> LinkedIn
                     </Button>
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Progress Indicators */}
-              <div className="absolute bottom-8 left-0 right-0 z-10">
-                <div className="container">
-                  <div className="flex gap-2 max-w-3xl">
-                    {latestArticles.map((_, idx) => (
-                      <motion.div
-                        key={idx}
-                        className={`h-1 flex-1 rounded-full transition-all ${
-                          idx === currentBreakingIndex ? 'bg-primary' : 'bg-white/30'
-                        }`}
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: idx === currentBreakingIndex ? 1 : 0.3 }}
-                        transition={{ duration: idx === currentBreakingIndex ? 5 : 0.3 }}
-                      />
-                    ))}
                   </div>
                 </div>
               </div>
@@ -430,7 +366,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trending Articles */}
+      {/* Trending */}
       {trendingArticles.length > 0 && (
         <section className="container py-12">
           <div className="flex items-center gap-2 mb-8">
@@ -440,17 +376,17 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {trendingArticles.map((article, idx) => (
               <motion.div
-                key={article.id}
+                key={article.id || article._id || idx}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
               >
-                <Card 
+                <Card
                   className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
-                  onClick={() => navigateToArticle(article.id)}
+                  onClick={() => navigateToArticle(article.id || article._id)}
                 >
                   <div className="relative h-48 overflow-hidden">
-                    <img 
+                    <img
                       src={article.image || 'https://images.unsplash.com/photo-1498644035638-2c3357894b10'}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -460,7 +396,9 @@ export default function HomePage() {
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
+                    <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                      {article.title}
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{article.excerpt}</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{new Date(article.createdAt).toLocaleDateString()}</span>
@@ -484,17 +422,17 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {regularArticles.map((article, idx) => (
               <motion.div
-                key={article.id}
+                key={article.id || article._id || idx}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
               >
-                <Card 
+                <Card
                   className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full group"
-                  onClick={() => navigateToArticle(article.id)}
+                  onClick={() => navigateToArticle(article.id || article._id)}
                 >
                   <div className="relative h-40 overflow-hidden">
-                    <img 
+                    <img
                       src={article.image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c'}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -502,7 +440,9 @@ export default function HomePage() {
                   </div>
                   <CardContent className="p-4">
                     <Badge className="mb-2 text-xs">{article.category}</Badge>
-                    <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
+                    <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                      {article.title}
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{article.excerpt}</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{new Date(article.createdAt).toLocaleDateString()}</span>
@@ -523,14 +463,18 @@ export default function HomePage() {
         <div className="container py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4 text-primary">Shrigonda News</h3>
-              <p className="text-sm text-gray-400">Your trusted source for local and national news</p>
+              <h3 className="font-bold text-lg mb-4 text-primary">I Love Shrigonda News</h3>
+              <p className="text-sm text-gray-400">
+                Your trusted source for local and national news
+              </p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Categories</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 {categories.map(cat => (
-                  <li key={cat.id} className="hover:text-white cursor-pointer transition-colors">{cat.name}</li>
+                  <li key={cat.id} className="hover:text-white cursor-pointer transition-colors">
+                    {cat.name}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -559,7 +503,9 @@ export default function HomePage() {
             </div>
           </div>
           <Separator className="my-8 bg-white/20" />
-          <p className="text-center text-sm text-gray-400">© 2025 Shrigonda News. All rights reserved.</p>
+          <p className="text-center text-sm text-gray-400">
+            © 2025 I Love Shrigonda News. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

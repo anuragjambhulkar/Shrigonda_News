@@ -1,4 +1,4 @@
-# Shrigonda News - Development Checkpoint
+# I Love Shrigonda News - Development Checkpoint
 
 ## Project Overview
 Building a modern news website with role-based authentication, manual CMS, and real-time notifications.
@@ -163,4 +163,4 @@ Building a modern news website with role-based authentication, manual CMS, and r
 - Admin/Editor login is hidden at `/admin/login`
 - Public users can view all content without login
 - Real-time notifications for new articles
-- Social sharing includes "Shrigonda News" watermark
+- Social sharing includes "I Love Shrigonda News" watermark

@@ -185,7 +185,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <img 
               src="https://customer-assets.emergentagent.com/job_754a0040-d589-4dfd-90f1-615496373220/artifacts/7inmznbe_logo.jpg" 
-              alt="Shrigonda News" 
+              alt="I Love Shrigonda News" 
               className="h-10 w-auto"
             />
             <div>

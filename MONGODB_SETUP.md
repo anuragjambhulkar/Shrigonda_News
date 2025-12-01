@@ -392,7 +392,7 @@ Add these to your `.env` file:
 MONGO_URL=mongodb://localhost:27017
 DB_NAME=shrigonda_news
 JWT_SECRET=your-secret-key-here
-NEXT_PUBLIC_BASE_URL=https://your-domain.com
+NEXT_PUBLIC_BASE_URL=https://iloveshrigonda.com
 ```
 
 ---

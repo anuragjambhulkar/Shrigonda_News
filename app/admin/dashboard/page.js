@@ -91,6 +91,33 @@ export default function AdminDashboard() {
     router.push('/');
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setFormData({ ...formData, image: data.url });
+        toast.success('Image uploaded successfully!');
+      } else {
+        toast.error(data.error || 'Image upload failed.');
+      }
+    } catch (error) {
+      toast.error('An error occurred during upload.');
+      console.error('Upload error:', error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -287,14 +314,28 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="image">Image URL</Label>
+                  <Label htmlFor="image-upload">Image</Label>
                   <Input
-                    id="image"
-                    type="url"
-                    placeholder="https://..."
-                    value={formData.image}
-                    onChange={(e) => setFormData({...formData, image: e.target.value})}
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="mb-2"
                   />
+                  {formData.image && (
+                    <div className="relative mt-2 w-full h-64 border rounded-lg overflow-hidden">
+                      <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => setFormData({...formData, image: ''})}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 
                 <div>

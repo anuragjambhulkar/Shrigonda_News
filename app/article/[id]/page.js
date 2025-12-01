@@ -223,7 +223,12 @@ export default function ArticlePage() {
                   <Tag className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">Tags:</span>
                   {article.tags.map((tag, i) => (
-                    <Badge key={i} variant="outline" className="text-xs">
+                    <Badge
+                      key={i}
+                      variant="outline"
+                      className="text-xs cursor-pointer hover:bg-primary hover:text-white transition-colors"
+                      onClick={() => router.push(`/?tag=${encodeURIComponent(tag)}`)}
+                    >
                       {tag}
                     </Badge>
                   ))}

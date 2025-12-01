@@ -224,6 +224,22 @@ async function handleCreateArticle(request) {
     const news = await getCollection('news');
     await news.insertOne(article);
 
+    // Create notification
+    try {
+      const notifications = await getCollection('notifications');
+      await notifications.insertOne({
+        id: uuidv4(),
+        title: 'New Article Published',
+        message: `New article "${title}" has been published in ${category}.`,
+        articleId: article.id,
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+    } catch (notifError) {
+      console.error('Failed to create notification:', notifError);
+      // Don't fail the request if notification fails
+    }
+
     return handleCORS(NextResponse.json({ message: 'Article created', article }));
   } catch (error) {
     console.error('Create article error:', error);

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Search, Menu, X, TrendingUp, Clock, Eye, Share2, Facebook, Twitter, Linkedin, Radio, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,8 +20,11 @@ const categories = [
   { id: 'business', name: 'Business', icon: '💼' }
 ];
 
-export default function HomePage() {
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tagParam = searchParams.get('tag');
+
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -34,7 +37,7 @@ export default function HomePage() {
   useEffect(() => {
     loadArticles();
     loadNotifications();
-    
+
     // Poll for new notifications every 10 seconds
     const interval = setInterval(loadNotifications, 10000);
     return () => clearInterval(interval);
@@ -42,7 +45,7 @@ export default function HomePage() {
 
   useEffect(() => {
     filterArticles();
-  }, [selectedCategory, searchQuery, articles]);
+  }, [selectedCategory, searchQuery, articles, tagParam]);
 
   // Auto-rotate breaking news every 5 seconds
   useEffect(() => {
@@ -57,11 +60,10 @@ export default function HomePage() {
   const loadArticles = async () => {
     try {
       const res = await fetch('/api/news');
-      console.log('Response status from /api/news:', res.status);
       const data = await res.json();
-      console.log('Response data from /api/news:', data);
       if (res.ok) {
-        setArticles(data.articles || []);
+        const sortedArticles = (data.articles || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setArticles(sortedArticles);
       } else {
         console.error('Failed to load articles:', data.error);
         setArticles([]);
@@ -77,7 +79,7 @@ export default function HomePage() {
       const data = await res.json();
       const unreadNotifs = (data.notifications || []).filter(n => !n.read);
       setNotifications(unreadNotifs);
-      
+
       if (unreadNotifs.length > 0 && notifications.length < unreadNotifs.length) {
         toast.success('New article published!', {
           description: unreadNotifs[0].message
@@ -90,18 +92,23 @@ export default function HomePage() {
 
   const filterArticles = () => {
     let filtered = articles;
-    
+
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(a => a.category === selectedCategory);
     }
-    
+
+    if (tagParam) {
+      filtered = filtered.filter(a => a.tags && a.tags.includes(tagParam));
+    }
+
     if (searchQuery) {
-      filtered = filtered.filter(a => 
+      filtered = filtered.filter(a =>
         a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.content.toLowerCase().includes(searchQuery.toLowerCase())
+        a.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (a.tags && a.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
-    
+
     setFilteredArticles(filtered);
   };
 
@@ -114,13 +121,13 @@ export default function HomePage() {
       e.stopPropagation();
       e.preventDefault();
     }
-    
+
     const url = `${window.location.origin}/article/${article.id}`;
     const watermark = `\n\n📰 Via I Love Shrigonda News - Your trusted source for local news`;
     const text = `${article.title}${watermark}`;
-    
+
     let shareUrl = '';
-    switch(platform) {
+    switch (platform) {
       case 'facebook':
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
         break;
@@ -131,7 +138,7 @@ export default function HomePage() {
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
         break;
     }
-    
+
     if (shareUrl) {
       window.open(shareUrl, '_blank', 'width=600,height=400');
       toast.success('Opening share dialog...');
@@ -149,9 +156,9 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_754a0040-d589-4dfd-90f1-615496373220/artifacts/7inmznbe_logo.jpg" 
-              alt="I Love Shrigonda News" 
+            <img
+              src="https://customer-assets.emergentagent.com/job_754a0040-d589-4dfd-90f1-615496373220/artifacts/7inmznbe_logo.jpg"
+              alt="I Love Shrigonda News"
               className="h-12 w-auto"
             />
             <div className="hidden md:block">
@@ -159,12 +166,12 @@ export default function HomePage() {
               <p className="text-xs text-muted-foreground">Your Love for the City</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {/* Search */}
             <div className="hidden md:flex items-center gap-2">
-              <Input 
-                placeholder="Search news..." 
+              <Input
+                placeholder="Search news..."
                 className="w-64"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -173,11 +180,11 @@ export default function HomePage() {
                 <Search className="h-4 w-4" />
               </Button>
             </div>
-            
+
             {/* Notifications */}
             <div className="relative">
-              <Button 
-                size="icon" 
+              <Button
+                size="icon"
                 variant="ghost"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
@@ -188,7 +195,7 @@ export default function HomePage() {
                   </span>
                 )}
               </Button>
-              
+
               {showNotifications && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -211,11 +218,11 @@ export default function HomePage() {
                 </motion.div>
               )}
             </div>
-            
+
             {/* Mobile Menu */}
-            <Button 
-              size="icon" 
-              variant="ghost" 
+            <Button
+              size="icon"
+              variant="ghost"
               className="md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -223,7 +230,7 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
-        
+
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <motion.div
@@ -232,8 +239,8 @@ export default function HomePage() {
             className="md:hidden border-t"
           >
             <div className="container py-4">
-              <Input 
-                placeholder="Search news..." 
+              <Input
+                placeholder="Search news..."
                 className="mb-4"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -283,7 +290,7 @@ export default function HomePage() {
             >
               {/* Background Image with Overlay */}
               <div className="absolute inset-0 z-0">
-                <img 
+                <img
                   src={currentBreaking.image || 'https://images.unsplash.com/photo-1495020689067-958852a7765e'}
                   alt={currentBreaking.title}
                   className="w-full h-full object-cover opacity-40"
@@ -351,34 +358,34 @@ export default function HomePage() {
                     transition={{ delay: 0.6, duration: 0.5 }}
                     className="flex gap-3 flex-wrap"
                   >
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="bg-primary hover:bg-primary/90"
                       onClick={() => navigateToArticle(currentBreaking.id)}
                     >
                       Read Full Story
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      variant="outline"
+                      size="lg"
                       className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'facebook', e)}
                     >
                       <Facebook className="h-4 w-4" />
                       <span>Facebook</span>
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      variant="outline"
+                      size="lg"
                       className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'twitter', e)}
                     >
                       <Twitter className="h-4 w-4" />
                       <span>Twitter</span>
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
+                    <Button
+                      variant="outline"
+                      size="lg"
                       className="border-white text-white bg-black/30 hover:bg-white/10 flex items-center gap-2 backdrop-blur-sm"
                       onClick={(e) => shareArticle(currentBreaking, 'linkedin', e)}
                     >
@@ -396,9 +403,8 @@ export default function HomePage() {
                     {latestArticles.map((_, idx) => (
                       <motion.div
                         key={idx}
-                        className={`h-1 flex-1 rounded-full transition-all ${
-                          idx === currentBreakingIndex ? 'bg-primary' : 'bg-white/30'
-                        }`}
+                        className={`h-1 flex-1 rounded-full transition-all ${idx === currentBreakingIndex ? 'bg-primary' : 'bg-white/30'
+                          }`}
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: idx === currentBreakingIndex ? 1 : 0.3 }}
                         transition={{ duration: idx === currentBreakingIndex ? 5 : 0.3 }}
@@ -415,24 +421,38 @@ export default function HomePage() {
       {/* Categories */}
       <section className="border-b bg-muted/30">
         <div className="container py-4">
-          <div className="flex gap-2 overflow-x-auto">
-            <Button
-              variant={selectedCategory === 'all' ? 'default' : 'outline'}
-              onClick={() => setSelectedCategory('all')}
-              className="whitespace-nowrap"
-            >
-              All News
-            </Button>
-            {categories.map(cat => (
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-2 overflow-x-auto">
               <Button
-                key={cat.id}
-                variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(cat.id)}
+                variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                onClick={() => setSelectedCategory('all')}
                 className="whitespace-nowrap"
               >
-                {cat.icon} {cat.name}
+                All News
               </Button>
-            ))}
+              {categories.map(cat => (
+                <Button
+                  key={cat.id}
+                  variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className="whitespace-nowrap"
+                >
+                  {cat.icon} {cat.name}
+                </Button>
+              ))}
+            </div>
+            {tagParam && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Filtered by tag:</span>
+                <Badge variant="secondary" className="gap-1">
+                  {tagParam}
+                  <X
+                    className="h-3 w-3 cursor-pointer hover:text-destructive"
+                    onClick={() => router.push('/')}
+                  />
+                </Badge>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -452,12 +472,12 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
               >
-                <Card 
+                <Card
                   className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
                   onClick={() => navigateToArticle(article.id)}
                 >
                   <div className="relative h-48 overflow-hidden">
-                    <img 
+                    <img
                       src={article.image || 'https://images.unsplash.com/photo-1498644035638-2c3357894b10'}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -496,12 +516,12 @@ export default function HomePage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
               >
-                <Card 
+                <Card
                   className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full group"
                   onClick={() => navigateToArticle(article.id)}
                 >
                   <div className="relative h-40 overflow-hidden">
-                    <img 
+                    <img
                       src={article.image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c'}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -570,5 +590,13 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
